@@ -1,5 +1,5 @@
 // Keeps the app working offline. Bump VERSION when the files change.
-const VERSION = "caloriesum-v2";
+const VERSION = "caloriesum-v3";
 const FILES = ["./", "index.html", "manifest.webmanifest", "foods.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {

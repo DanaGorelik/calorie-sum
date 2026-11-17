@@ -354,7 +354,7 @@
       const b = document.createElement("button");
       b.type = "button"; b.className = "chip" + (t === selectedType ? " on" : "");
       b.textContent = t;
-      b.onclick = () => { selectedType = t; render(); };
+      b.onclick = () => { selectedType = t; render(); if (typeof saveDraft === "function") saveDraft(); };
       $("typeChips").appendChild(b);
     });
 
@@ -680,9 +680,27 @@
     $("mealKcal").value = r.kcal;
     $("mealP").value = r.p ?? ""; $("mealC").value = r.c ?? ""; $("mealF").value = r.f ?? "";
     if (r.p != null || r.c != null || r.f != null) { $("macroInputs").hidden = false; $("toggleMacros").textContent = "− Hide protein, carbs, fat"; }
+    saveDraft();
     $("portionDialog").close(); $("searchDialog").close();
     $("addForm").scrollIntoView({ behavior: "smooth", block: "center" });
   });
+
+  // ---------- keep a half-typed meal if the app is closed before tapping Add ----------
+  const DRAFT = "caloriesum.draft", draftIds = ["mealName", "mealKcal", "mealP", "mealC", "mealF"];
+  function saveDraft() {
+    const d = {}; draftIds.forEach(id => d[id] = $(id).value); d.type = selectedType;
+    if (draftIds.some(id => d[id])) localStorage.setItem(DRAFT, JSON.stringify(d)); else localStorage.removeItem(DRAFT);
+  }
+  draftIds.forEach(id => $(id).addEventListener("input", saveDraft));
+  $("addForm").addEventListener("submit", () => setTimeout(saveDraft, 0));
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT) || "null");
+    if (d) {
+      draftIds.forEach(id => { if (d[id]) $(id).value = d[id]; });
+      if (TYPES.includes(d.type)) selectedType = d.type;
+      if (d.mealP || d.mealC || d.mealF) { $("macroInputs").hidden = false; $("toggleMacros").textContent = "− Hide protein, carbs, fat"; }
+    }
+  } catch {}
 
   $("prevWeek").onclick = () => { weekOffset++; renderWeek(); };
   $("nextWeek").onclick = () => { if (weekOffset > 0) { weekOffset--; renderWeek(); } };
