@@ -132,6 +132,7 @@
   .res-head { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin: 12px 4px 2px; }
   .portion { display: flex; gap: 8px; align-items: center; }
   .portion input { flex: 0 0 90px; }
+  .portion select { flex: 1; }
   .portion-total { font-size: 28px; font-weight: 800; text-align: center; margin: 12px 0 2px; }
   .fav-manage li { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .fav-manage li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -245,7 +246,7 @@
 
 <dialog id="searchDialog">
   <form id="searchForm" class="row" style="display:flex;gap:8px" autocomplete="off">
-    <input id="searchInput" type="search" placeholder="e.g. banana" enterkeyhint="search">
+    <input id="searchInput" type="search" placeholder="e.g. בננה or banana" dir="auto" enterkeyhint="search">
     <button class="primary" type="submit" style="width:auto;padding:12px 14px">Search</button>
     <button class="secondary" type="button" id="searchClose" style="width:auto;padding:12px">✕</button>
   </form>
@@ -255,6 +256,7 @@
 <dialog id="portionDialog">
   <form id="portionForm">
     <h3 id="portionName">Food</h3>
+    <p class="hint" id="portionEn" style="margin-top:-8px"></p>
     <label for="portionAmt">How much did you have?</label>
     <div class="portion"><input id="portionAmt" type="number" inputmode="decimal" min="0" step="any" required><select id="portionUnitSel" aria-label="Unit"></select></div>
     <div class="portion-total" id="portionTotal">0 kcal</div>
@@ -562,39 +564,59 @@
   $("favClose").onclick = () => $("favDialog").close();
 
   // ---------- food search (online) ----------
-  // Generic foods come from USDA FoodData Central, packaged products from Open Food Facts.
-  const USDA_KEY = "DEMO_KEY";
+  // Israeli foods: the Ministry of Health national nutrition database (Tzameret) on data.gov.il.
+  // Israeli packaged products: Open Food Facts, filtered to products sold in Israel.
+  const IL_API = "https://data.gov.il/api/3/action/datastore_search";
+  const IL_FOODS = "c3cb0630-0650-46c1-a068-82d575c094b2";
+  const IL_PORTIONS = "755d28c0-75f7-40e1-9c8c-ecdd106f9b2d";
+  const IL_UNIT_NAMES = {"100": "יחידה", "101": "יחידה קטנה מאד", "102": "יחידה קטנה", "103": "יחידה בינונית", "104": "יחידה גדולה", "105": "יחידה גדולה מאד", "106": "פאוץ' קטן", "107": "פאוץ' בינוני", "200": "כוס", "201": "כוס מידה", "202": "ספל", "203": "ספל למרק", "204": "כוס ליין", "205": "כוס קוביות", "206": "כוס פרוסות", "207": "כוס קצוץ", "208": "כוס מעוך", "209": "כוסית ליין", "300": "כף", "301": "כף שטוחה", "302": "כף גדושה", "304": "כף לגלידה", "305": "מצקת קטנה", "307": "מצקת גדולה", "308": "כף מידה", "400": "כפית", "401": "כפית שטוחה", "402": "כפית גדושה", "500": "פרוסה", "501": "פרוסה דקה", "502": "פרוסה בינונית", "503": "פרוסה עבה", "600": "גביע", "601": "גביע קטן מאד", "602": "גביע קטן", "603": "גביע בינוני", "604": "גביע גדול", "605": "גביע מחולק", "800": "מנה", "801": "מנה קטנה", "802": "מנה בינונית", "803": "מנה גדולה", "900": "אריזה", "901": "חבילה", "902": "חפיסה", "903": "שקית", "904": "קרטון", "905": "אריזה אישית", "906": "קופסה", "907": "שפורפרת", "908": "צנצנת", "909": "קרטון קטן", "910": "קרטון גדול", "911": "אריזה/שקית קטנה", "912": "אריזה גדולה", "1001": "צלחת קטנה", "1002": "צלחת בינונית", "1003": "צלחת גדולה", "1004": "צלחת למרק", "1005": "קערית מרק", "1006": "קערית לפתן", "1007": "קערית חד-פעמית", "1100": "בקבוק", "1101": "בקבוק קטן", "1102": "בקבוק בינוני", "1103": "בקבוק גדול", "1104": "פחית", "1105": "פחית קטנה", "1106": "פחית גדולה", "1201": "גבעול", "1202": "פס/מקל", "1203": "עלה", "1204": "עיגול/כדור", "1205": "פלח", "1206": "משולש", "1207": "ריבוע/קוביה", "1208": "אצבע", "1209": "גליל", "1210": "טבליה", "1211": "שן", "1212": "פרח", "1213": "מקל עבה", "1214": "מקל דק", "1215": "ראש", "1216": "טיפה", "1217": "קלח", "1218": "חופן", "1219": "חטיף", "1220": "חטיף מיני", "1221": "חטיף קטן", "1222": "חטיף בינוני", "1223": "חטיף גדול", "1224": "לחמניה", "1225": "סוכריה", "1226": "פיתה", "1227": "פיתה ביתית", "1228": "אשכולית", "1229": "פילה קטן", "1230": "פילה בינוני", "1231": "פילה גדול", "1232": "קטן ללא עצם", "1233": "בינוני ללא עצם", "1234": "גדול ללא עצם", "1235": "קטן שלם", "1236": "בינוני שלם", "1237": "גדול שלם"};
   let searchSeq = 0, ctrl;
-  const per100 = (v) => (v == null || isNaN(Number(v))) ? undefined : Number(v) / 100;
-  const nice = t => t.length > 1 && t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t;
+  const per100 = (v) => (v == null || v === "" || isNaN(Number(v))) ? undefined : Number(v) / 100;
 
-  async function searchUSDA(q, signal) {
-    const url = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=" + USDA_KEY +
-      "&pageSize=15&dataType=" + encodeURIComponent("Foundation,SR Legacy,Survey (FNDDS)") + "&query=" + encodeURIComponent(q);
-    const r = await fetch(url, { signal });
-    if (r.status === 429) throw new Error("limit");
-    if (!r.ok) throw new Error("usda");
-    const data = await r.json();
-    const out = [], seen = new Set();
-    for (const f of data.foods || []) {
-      const nut = id => { const n = (f.foodNutrients || []).find(x => x.nutrientId === id || String(x.nutrientNumber) === String(id)); return n ? n.value : undefined; };
-      let kcal = nut(1008); if (kcal == null) kcal = nut(2047); if (kcal == null) kcal = nut(2048);
-      if (kcal == null) { const kj = nut(1062); if (kj != null) kcal = kj / 4.184; }
-      if (kcal == null || !f.description) continue;
-      const name = nice(f.description);
-      if (seen.has(name.toLowerCase())) continue; seen.add(name.toLowerCase());
-      const units = [];
-      (f.foodMeasures || []).forEach(m => { const t = (m.disseminationText || "").trim(); if (m.gramWeight > 0 && t && t.toLowerCase() !== "quantity not specified" && !units.some(u => u.label === t)) units.push({ label: t, grams: m.gramWeight, rank: m.rank }); });
-      units.sort((x, y) => (x.rank || 0) - (y.rank || 0));
-      units.push({ label: "grams", grams: 1 });
-      out.push({ name, sub: "per 100 g: " + fmt(kcal) + " kcal", per: { kcal: kcal / 100, p: per100(nut(1003)), c: per100(nut(1005)), f: per100(nut(1004)) }, units });
-      if (out.length >= 10) break;
+  async function searchIL(q, signal) {
+    const fields = "Code,shmmitzrach,english_name,food_energy,protein,total_fat,carbohydrates";
+    const r = await fetch(`${IL_API}?resource_id=${IL_FOODS}&limit=100&fields=${fields}&q=${encodeURIComponent(q)}`, { signal });
+    if (!r.ok) throw new Error("il");
+    const d = await r.json();
+    if (!d.success) throw new Error("il");
+    const ql = q.toLowerCase();
+    const scored = [];
+    for (const x of d.result.records || []) {
+      const he = (x.shmmitzrach || "").trim(), en = (x.english_name || "").trim();
+      if (!he || /^FFQ/i.test(he) || x.food_energy == null || x.food_energy === "") continue;
+      const heFirst = he.split(",")[0].trim(), enL = en.toLowerCase();
+      let score = 0;
+      if (heFirst === q || enL.split(",")[0].trim() === ql) score += 6;
+      if (he.startsWith(q) || enL.startsWith(ql)) score += 3;
+      if (heFirst.includes(q) || enL.split(",")[0].includes(ql)) score += 1;
+      score -= he.length / 80;
+      scored.push({ score, item: {
+        name: he, en: en && en !== he ? en : "", code: x.Code,
+        sub: "per 100 g: " + fmt(Number(x.food_energy)) + " kcal",
+        per: { kcal: Number(x.food_energy) / 100, p: per100(x.protein), c: per100(x.carbohydrates), f: per100(x.total_fat) },
+        units: [{ label: "grams", grams: 1 }]
+      } });
     }
-    return out;
+    return scored.sort((a, b) => b.score - a.score).slice(0, 15).map(s => s.item);
+  }
+
+  // Portion sizes (unit, small, cup, slice…) for one Israeli food, loaded when you pick it.
+  async function loadILPortions(item) {
+    if (item.unitsLoaded || item.code == null) return;
+    const r = await fetch(`${IL_API}?resource_id=${IL_PORTIONS}&limit=50&filters=${encodeURIComponent(JSON.stringify({ mmitzrach: String(item.code) }))}`);
+    const d = await r.json();
+    const units = [];
+    for (const x of (d.result && d.result.records) || []) {
+      const g = Number(x.mishkal), name = IL_UNIT_NAMES[String(x.mida).trim()];
+      if (!name || !(g > 0)) continue;
+      if (!units.some(u => u.label === name)) units.push({ label: name, grams: g });
+    }
+    item.units = units.concat([{ label: "grams", grams: 1 }]);
+    item.unitsLoaded = true;
   }
 
   async function searchOFF(q, signal) {
-    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=20&fields=product_name,brands,nutriments,serving_quantity,serving_size&search_terms=" + encodeURIComponent(q);
+    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=20&fields=product_name,product_name_he,brands,nutriments,serving_quantity,serving_size&tagtype_0=countries&tag_contains_0=contains&tag_0=israel&search_terms=" + encodeURIComponent(q);
     const r = await fetch(url, { signal });
     if (!r.ok) throw new Error("off");
     const data = await r.json();
@@ -603,8 +625,9 @@
       const n = p.nutriments || {};
       let kcal = n["energy-kcal_100g"];
       if (kcal == null && n["energy_100g"] != null) kcal = n["energy_100g"] / 4.184;
-      if (kcal == null || !p.product_name) continue;
-      const name = p.product_name.trim() + (p.brands ? " (" + p.brands.split(",")[0].trim() + ")" : "");
+      const pn = (p.product_name_he || p.product_name || "").trim();
+      if (kcal == null || !pn) continue;
+      const name = pn + (p.brands ? " (" + p.brands.split(",")[0].trim() + ")" : "");
       if (seen.has(name.toLowerCase())) continue; seen.add(name.toLowerCase());
       const sq = Number(p.serving_quantity), units = [];
       if (sq > 0 && sq < 2000) units.push({ label: "serving" + (p.serving_size ? " (" + p.serving_size + ")" : " (" + sq + " g)"), grams: sq });
@@ -618,8 +641,8 @@
   function resultRow(item) {
     const div = document.createElement("div"); div.className = "result";
     const rn = document.createElement("div"); rn.className = "rn";
-    const n = document.createElement("span"); n.textContent = item.name;
-    const sm = document.createElement("small"); sm.textContent = item.sub;
+    const n = document.createElement("span"); n.textContent = item.name; n.dir = "auto";
+    const sm = document.createElement("small"); sm.textContent = (item.en ? item.en + " · " : "") + item.sub;
     rn.append(n, sm);
     const u = item.units[0], rk = document.createElement("div"); rk.className = "rk";
     rk.textContent = u.grams === 1 ? fmt(item.per.kcal * 100) + " kcal / 100 g" : fmt(item.per.kcal * u.grams) + " kcal";
@@ -645,17 +668,17 @@
     ctrl = new AbortController();
     $("results").innerHTML = '<div class="empty">Searching…</div>';
     const settle = p => p.then(v => ({ ok: true, v }), e => ({ ok: false, e }));
-    const [u, o] = await Promise.all([settle(searchUSDA(q, ctrl.signal)), settle(searchOFF(q, ctrl.signal))]);
+    const [u, o] = await Promise.all([settle(searchIL(q, ctrl.signal)), settle(searchOFF(q, ctrl.signal))]);
     if (seq !== searchSeq) return;
     $("results").innerHTML = "";
-    section("Foods", u.ok ? u.v : null, u.ok ? "No matches." : errText(u.e));
-    section("Packaged products", o.ok ? o.v : null, o.ok ? "No matches." : errText(o.e));
+    section("Israeli foods (Ministry of Health)", u.ok ? u.v : null, u.ok ? "No matches." : errText(u.e));
+    section("Israeli packaged products", o.ok ? o.v : null, o.ok ? "No matches." : errText(o.e));
   }
   $("openSearch").onclick = () => {
     $("searchInput").value = $("mealName").value;
     $("searchDialog").showModal();
     if ($("searchInput").value.trim().length >= 2) runSearch();
-    else { $("results").innerHTML = '<div class="empty">Type a food, like "banana" or "chicken breast", or a product name or brand, then tap Search.</div>'; $("searchInput").focus(); }
+    else { $("results").innerHTML = '<div class="empty">Type a food in Hebrew or English, like "בננה", "שקשוקה" or "banana", then tap Search.</div>'; $("searchInput").focus(); }
   };
   $("searchForm").addEventListener("submit", e => { e.preventDefault(); $("searchInput").blur(); runSearch(); });
   $("searchClose").onclick = () => $("searchDialog").close();
@@ -676,14 +699,20 @@
     $("portionTotal").textContent = fmt(r.kcal) + " kcal";
     $("portionMacros").textContent = (r.p != null || r.c != null || r.f != null) ? `Protein ${g1(r.p || 0)} g · Carbs ${g1(r.c || 0)} g · Fat ${g1(r.f || 0)} g` : "";
   }
-  function openPortion(item) {
-    portionItem = item;
-    $("portionName").textContent = item.name;
+  function fillUnits(item) {
     const sel = $("portionUnitSel"); sel.innerHTML = "";
-    item.units.forEach((u, i) => { const o = document.createElement("option"); o.value = i; o.textContent = u.grams === 1 ? "grams" : `${u.label} – ${fmt(u.grams)} g`; sel.appendChild(o); });
+    item.units.forEach((u, i) => { const o = document.createElement("option"); o.value = i; o.textContent = u.grams === 1 ? "grams" : `${fmt(u.grams)} g – \u2068${u.label}\u2069`; sel.appendChild(o); });
     $("portionAmt").value = item.units[0].grams === 1 ? 100 : 1;
     updatePortion();
+  }
+  async function openPortion(item) {
+    portionItem = item;
+    $("portionName").textContent = item.name; $("portionName").dir = "auto"; $("portionEn").textContent = item.en || "";
+    fillUnits(item);
     $("portionDialog").showModal();
+    if (item.code != null && !item.unitsLoaded) {
+      try { await loadILPortions(item); if (portionItem === item) fillUnits(item); } catch {}
+    }
   }
   $("portionAmt").addEventListener("input", updatePortion);
   $("portionUnitSel").addEventListener("change", () => {
