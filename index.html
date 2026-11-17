@@ -626,7 +626,7 @@
     clearTimeout(searchTimer);
     if (q.length < 2) { $("results").innerHTML = '<div class="empty">Type at least 2 letters.</div>'; return; }
     const local = searchLocal(q);
-    renderResults(local, null, navigator.onLine === false ? "You're offline, so only common foods are shown." : "Searching…");
+    renderResults(local, null, navigator.onLine === false ? "You're offline, so only common foods are shown." : q.length < 3 ? "Type one more letter to search packaged foods." : "Searching…");
     if (navigator.onLine === false || q.length < 3) return;
     searchTimer = setTimeout(async () => {
       try {
