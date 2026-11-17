@@ -163,7 +163,7 @@
   </section>
 
   <section class="card">
-    <div class="card-head"><h2>Add a meal</h2><button class="link-btn" id="manageFavs" type="button" hidden>Edit favorites</button></div>
+    <div class="card-head"><h2>Add a meal</h2><button class="link-btn" id="manageFavs" type="button" hidden>Edit saved foods</button></div>
     <div class="fav-row" id="favRow"></div>
     <form id="addForm" autocomplete="off">
       <div class="chips" id="typeChips"></div>
@@ -268,10 +268,35 @@
   </form>
 </dialog>
 
+<dialog id="myFoodDialog">
+  <form id="myFoodForm" autocomplete="off">
+    <h3>Add a food</h3>
+    <p class="hint" style="margin-top:-6px">Copy the numbers from the nutrition label (סימון תזונתי). It will show up under "My foods" next time you search.</p>
+    <label for="mfName">Name</label>
+    <input id="mfName" dir="auto" maxlength="80" placeholder="e.g. דנונה PRO קראנץ'">
+    <label for="mfKcal">Calories per 100 g (אנרגיה)</label>
+    <input id="mfKcal" type="number" inputmode="decimal" min="0" step="any" placeholder="kcal">
+    <label for="mfServing">One serving or package, in grams (optional)</label>
+    <input id="mfServing" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 200">
+    <label>Per 100 g, optional: protein, carbs, fat</label>
+    <div class="row macro-inputs" style="display:flex;gap:8px">
+      <input id="mfP" type="number" inputmode="decimal" min="0" step="any" placeholder="Protein">
+      <input id="mfC" type="number" inputmode="decimal" min="0" step="any" placeholder="Carbs">
+      <input id="mfF" type="number" inputmode="decimal" min="0" step="any" placeholder="Fat">
+    </div>
+    <div class="dialog-btns">
+      <button class="secondary" type="button" id="mfCancel">Cancel</button>
+      <button class="primary" type="submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="favDialog">
   <h3>Favorites</h3>
   <p class="hint">Tap ☆ next to any meal you've logged to save it here.</p>
   <ul class="fav-manage" id="favManage"></ul>
+  <h3 style="margin-top:18px">My foods</h3>
+  <ul class="fav-manage" id="myFoodsManage"></ul>
   <div class="dialog-btns"><button class="secondary" type="button" id="favClose">Done</button></div>
 </dialog>
 
@@ -407,7 +432,7 @@
   function renderFavs() {
     const row = $("favRow"); row.innerHTML = "";
     const favs = state.favorites.slice().sort((a, b) => (b.uses || 0) - (a.uses || 0));
-    $("manageFavs").hidden = !favs.length;
+    $("manageFavs").hidden = !favs.length && !(state.myFoods || []).length;
     row.hidden = !favs.length;
     favs.forEach(f => {
       const b = document.createElement("button"); b.type = "button"; b.className = "fav";
@@ -550,6 +575,15 @@
 
   // ---------- favorites management ----------
   function renderFavManage() {
+    const mf = $("myFoodsManage"); mf.innerHTML = "";
+    if (!state.myFoods.length) mf.innerHTML = '<li class="empty">Foods you add from a label appear here.</li>';
+    state.myFoods.forEach(m => {
+      const li = document.createElement("li");
+      const n = document.createElement("span"); n.dir = "auto"; n.textContent = `${m.name} · ${fmt(m.kcal)} kcal/100 g`;
+      const d = document.createElement("button"); d.textContent = "🗑️"; d.setAttribute("aria-label", "Remove my food " + m.name);
+      d.onclick = () => { state.myFoods = state.myFoods.filter(x => x !== m); save(); renderFavManage(); };
+      li.append(n, d); mf.appendChild(li);
+    });
     const ul = $("favManage"); ul.innerHTML = "";
     if (!state.favorites.length) { ul.innerHTML = '<li class="empty">No favorites yet.</li>'; return; }
     state.favorites.forEach(f => {
@@ -575,10 +609,21 @@
 
   async function searchIL(q, signal) {
     const fields = "Code,shmmitzrach,english_name,food_energy,protein,total_fat,carbohydrates";
-    const r = await fetch(`${IL_API}?resource_id=${IL_FOODS}&limit=100&fields=${fields}&q=${encodeURIComponent(q)}`, { signal });
-    if (!r.ok) throw new Error("il");
-    const d = await r.json();
-    if (!d.success) throw new Error("il");
+    // Match word beginnings too (e.g. "קוטג" finds "קוטג'"), falling back to a plain search.
+    const words = q.split(/\s+/).map(w => w.replace(/[^\p{L}\p{N}]/gu, "")).filter(Boolean);
+    let d = null;
+    if (words.length) {
+      try {
+        const r = await fetch(`${IL_API}?resource_id=${IL_FOODS}&limit=400&fields=${fields}&plain=false&q=${encodeURIComponent(words.map(w => w + ":*").join(" & "))}`, { signal });
+        d = await r.json(); if (!d.success || !(d.result.records || []).length) d = null;
+      } catch (e) { if (e.name === "AbortError") throw e; }
+    }
+    if (!d) {
+      const r = await fetch(`${IL_API}?resource_id=${IL_FOODS}&limit=400&fields=${fields}&q=${encodeURIComponent(q)}`, { signal });
+      if (!r.ok) throw new Error("il");
+      d = await r.json();
+      if (!d.success) throw new Error("il");
+    }
     const ql = q.toLowerCase();
     const scored = [];
     for (const x of d.result.records || []) {
@@ -597,7 +642,7 @@
         units: [{ label: "grams", grams: 1 }]
       } });
     }
-    return scored.sort((a, b) => b.score - a.score).slice(0, 15).map(s => s.item);
+    return scored.sort((a, b) => b.score - a.score).map(s => s.item);
   }
 
   // Portion sizes (unit, small, cup, slice…) for one Israeli food, loaded when you pick it.
@@ -650,11 +695,18 @@
     div.onclick = () => openPortion(item);
     return div;
   }
-  function section(title, items, status) {
+  function section(title, items, status, first = 20) {
     const box = $("results");
-    const h = document.createElement("div"); h.className = "res-head"; h.textContent = title; box.appendChild(h);
-    if (items && items.length) items.forEach(i => box.appendChild(resultRow(i)));
-    else { const e = document.createElement("div"); e.className = "empty"; e.textContent = status; box.appendChild(e); }
+    const h = document.createElement("div"); h.className = "res-head"; h.textContent = title + (items && items.length > first ? ` · ${items.length}` : ""); box.appendChild(h);
+    if (!items || !items.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = status; box.appendChild(e); return; }
+    const wrap = document.createElement("div"); box.appendChild(wrap);
+    items.slice(0, first).forEach(i => wrap.appendChild(resultRow(i)));
+    if (items.length > first) {
+      const more = document.createElement("button"); more.type = "button"; more.className = "link-btn"; more.style.margin = "8px 4px";
+      more.textContent = `Show all ${items.length} results`;
+      more.onclick = () => { items.slice(first).forEach(i => wrap.appendChild(resultRow(i))); more.remove(); };
+      box.appendChild(more);
+    }
   }
   function errText(e) {
     if (e && e.message === "limit") return "The food database is busy right now. Try again in a few minutes.";
@@ -666,14 +718,58 @@
     const seq = ++searchSeq;
     if (ctrl) ctrl.abort();
     ctrl = new AbortController();
-    $("results").innerHTML = '<div class="empty">Searching…</div>';
+    $("results").innerHTML = "";
+    const mineNow = searchMine(q);
+    if (mineNow.length) section("My foods", mineNow, "");
+    $("results").insertAdjacentHTML("beforeend", '<div class="empty">Searching…</div>');
     const settle = p => p.then(v => ({ ok: true, v }), e => ({ ok: false, e }));
     const [u, o] = await Promise.all([settle(searchIL(q, ctrl.signal)), settle(searchOFF(q, ctrl.signal))]);
     if (seq !== searchSeq) return;
     $("results").innerHTML = "";
+    const mine = searchMine(q);
+    if (mine.length) section("My foods", mine, "");
     section("Israeli foods (Ministry of Health)", u.ok ? u.v : null, u.ok ? "No matches." : errText(u.e));
-    section("Israeli packaged products", o.ok ? o.v : null, o.ok ? "No matches." : errText(o.e));
+    section("Israeli packaged products (Open Food Facts)", o.ok ? o.v : null, o.ok ? "No matches." : errText(o.e));
+    addMissingButton();
   }
+  function addMissingButton() {
+    const b = document.createElement("button"); b.type = "button"; b.className = "secondary"; b.style.margin = "14px 0 4px";
+    b.textContent = "+ Can't find it? Add it from the package label";
+    b.onclick = () => openMyFood($("searchInput").value.trim());
+    $("results").appendChild(b);
+  }
+
+  // ---------- my foods: anything missing, added once from the nutrition label ----------
+  if (!state.myFoods) state.myFoods = [];
+  function myFoodItem(m) {
+    const units = [];
+    if (m.serving > 0) units.push({ label: "serving", grams: m.serving });
+    units.push({ label: "grams", grams: 1 });
+    return { name: m.name, sub: "per 100 g: " + fmt(m.kcal) + " kcal" + (m.serving > 0 ? ` · serving ${fmt(m.serving)} g` : ""),
+      per: { kcal: m.kcal / 100, p: per100(m.p), c: per100(m.c), f: per100(m.f) }, units };
+  }
+  function searchMine(q) {
+    const ws = q.toLowerCase().split(/\s+/).filter(Boolean);
+    return state.myFoods.filter(m => ws.every(w => m.name.toLowerCase().includes(w))).map(myFoodItem);
+  }
+  function openMyFood(name) {
+    ["mfName", "mfKcal", "mfServing", "mfP", "mfC", "mfF"].forEach(id => $(id).value = "");
+    $("mfName").value = name || "";
+    $("myFoodDialog").showModal();
+    $("mfName").focus();
+  }
+  $("mfCancel").onclick = () => $("myFoodDialog").close();
+  $("myFoodForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const name = $("mfName").value.trim(), kcal = Number($("mfKcal").value);
+    if (!name) { $("mfName").focus(); return; }
+    if (!(kcal >= 0) || $("mfKcal").value === "") { $("mfKcal").focus(); return; }
+    const m = { id: newId(), name, kcal, serving: num($("mfServing").value), p: num($("mfP").value), c: num($("mfC").value), f: num($("mfF").value) };
+    state.myFoods.push(m); save();
+    $("myFoodDialog").close();
+    $("searchInput").value = name;
+    openPortion(myFoodItem(m));
+  });
   $("openSearch").onclick = () => {
     $("searchInput").value = $("mealName").value;
     $("searchDialog").showModal();
