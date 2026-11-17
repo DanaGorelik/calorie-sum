@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Calories">
+<title>Calorie Sum</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #111827; --muted: #6b7280;
+    --line: #e5e7eb; --green: #16a34a; --green-soft: #dcfce7;
+    --amber: #d97706; --red: #dc2626; --red-soft: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f14; --card: #151a21; --text: #f3f4f6; --muted: #9ca3af;
+      --line: #262c35; --green-soft: #12301d; --red-soft: #3a1515;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  main { max-width: 520px; margin: 0 auto; padding: 12px 16px 40px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; }
+  .daynav { display: flex; align-items: center; gap: 4px; }
+  .daynav h1 { font-size: 18px; margin: 0; min-width: 130px; text-align: center; }
+  button { font: inherit; color: inherit; }
+  .icon-btn { background: none; border: 0; font-size: 22px; padding: 8px 10px; border-radius: 10px; cursor: pointer; color: var(--muted); }
+  .icon-btn:disabled { opacity: .25; }
+  .icon-btn:active { background: var(--line); }
+  .card { background: var(--card); border-radius: 18px; padding: 18px; margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .summary { text-align: center; }
+  .left-label { color: var(--muted); font-size: 14px; }
+  .left-num { font-size: 56px; font-weight: 800; line-height: 1.05; margin: 4px 0; font-variant-numeric: tabular-nums; }
+  .left-num.over { color: var(--red); }
+  .bar { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 12px 0 10px; }
+  .bar > div { height: 100%; width: 0; background: var(--green); border-radius: 99px; transition: width .3s; }
+  .bar.near > div { background: var(--amber); }
+  .bar.over > div { background: var(--red); }
+  .stats { display: flex; justify-content: space-around; color: var(--muted); font-size: 14px; }
+  .stats b { display: block; color: var(--text); font-size: 18px; }
+  h2 { font-size: 15px; margin: 0 0 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  form .row { display: flex; gap: 8px; margin-bottom: 8px; }
+  input, select { font: inherit; font-size: 16px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px; width: 100%; min-width: 0; }
+  input:focus, select:focus { outline: 2px solid var(--green); border-color: transparent; }
+  .kcal-input { flex: 0 0 110px; }
+  .primary { background: var(--green); color: #fff; border: 0; border-radius: 12px; padding: 13px;
+    width: 100%; font-weight: 700; font-size: 16px; cursor: pointer; }
+  .primary:active { filter: brightness(.92); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip { border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 7px 12px; font-size: 14px; cursor: pointer; }
+  .chip.on { background: var(--green-soft); border-color: var(--green); color: var(--green); font-weight: 600; }
+  .group-title { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin: 14px 0 4px; font-weight: 600; }
+  .group-title:first-child { margin-top: 0; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.meal { display: flex; align-items: center; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  li.meal:last-child { border-bottom: 0; }
+  .meal-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meal-kcal { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .meal-actions { display: flex; }
+  .meal-actions button { background: none; border: 0; padding: 6px 8px; cursor: pointer; color: var(--muted); font-size: 16px; border-radius: 8px; }
+  .meal-actions button:active { background: var(--line); }
+  .empty { color: var(--muted); text-align: center; padding: 14px 0; font-size: 15px; }
+  .history-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .history-row:last-child { border-bottom: 0; }
+  .history-row .d { flex: 0 0 92px; font-size: 14px; }
+  .history-row .mini { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .history-row .mini > div { height: 100%; background: var(--green); }
+  .history-row .mini.over > div { background: var(--red); }
+  .history-row .n { flex: 0 0 70px; text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; }
+  dialog { border: 0; border-radius: 18px; padding: 20px; width: min(92vw, 400px); background: var(--card); color: var(--text); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog h3 { margin: 0 0 12px; }
+  dialog label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px; }
+  .dialog-btns { display: flex; gap: 8px; margin-top: 16px; }
+  .secondary { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 13px; width: 100%; font-weight: 600; cursor: pointer; }
+  .danger { color: var(--red); }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(120px);
+    background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; display: flex; gap: 14px; align-items: center;
+    transition: transform .25s, visibility .25s; font-size: 15px; z-index: 10; visibility: hidden; }
+  .toast.show { transform: translateX(-50%) translateY(0); visibility: visible; }
+  .toast button { background: none; border: 0; color: #86efac; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <button class="icon-btn" id="prevDay" aria-label="Previous day">‹</button>
+    <div class="daynav"><h1 id="dayTitle">Today</h1></div>
+    <button class="icon-btn" id="nextDay" aria-label="Next day">›</button>
+  </header>
+
+  <section class="card summary">
+    <div class="left-label" id="leftLabel">Calories left</div>
+    <div class="left-num" id="leftNum">0</div>
+    <div class="bar" id="bar"><div id="barFill"></div></div>
+    <div class="stats">
+      <div><b id="goalVal">0</b>Goal</div>
+      <div><b id="eatenVal">0</b>Eaten</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Add a meal</h2>
+    <form id="addForm" autocomplete="off">
+      <div class="chips" id="typeChips"></div>
+      <div class="row">
+        <input id="mealName" placeholder="What did you eat?" enterkeyhint="next" maxlength="80">
+        <input id="mealKcal" class="kcal-input" type="number" inputmode="numeric" placeholder="kcal" min="0" max="10000" enterkeyhint="done">
+      </div>
+      <button class="primary" type="submit">Add</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2 id="mealsTitle">Today's meals</h2>
+    <div id="mealList"></div>
+  </section>
+
+  <section class="card">
+    <h2>Last 7 days</h2>
+    <div id="history"></div>
+  </section>
+
+  <section class="card">
+    <button class="secondary" id="openGoal">Change daily goal</button>
+  </section>
+</main>
+
+<dialog id="goalDialog">
+  <form method="dialog" id="goalForm">
+    <h3>Your daily goal</h3>
+    <label for="goalInput">Calories per day</label>
+    <input id="goalInput" type="number" inputmode="numeric" min="500" max="10000" required>
+    <p class="hint">Calories left = this goal minus everything you log that day.</p>
+    <div class="dialog-btns">
+      <button class="secondary" value="cancel" type="button" id="goalCancel">Cancel</button>
+      <button class="primary" value="ok" type="submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="editDialog">
+  <form method="dialog" id="editForm">
+    <h3>Edit meal</h3>
+    <label for="editName">Name</label>
+    <input id="editName" maxlength="80">
+    <label for="editKcal">Calories</label>
+    <input id="editKcal" type="number" inputmode="numeric" min="0" max="10000" required>
+    <label for="editType">Meal</label>
+    <select id="editType"></select>
+    <div class="dialog-btns">
+      <button class="secondary" type="button" id="editCancel">Cancel</button>
+      <button class="primary" type="submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"><span id="toastText"></span><button id="toastUndo">Undo</button></div>
+
+<script>
+(() => {
+  const TYPES = ["Breakfast", "Lunch", "Dinner", "Snack"];
+  const KEY = "caloriesum.v1";
+  const $ = id => document.getElementById(id);
+
+  // ---------- storage ----------
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || { goal: null, days: {} }; }
+    catch { return { goal: null, days: {} }; }
+  }
+  let state = load();
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  // ---------- dates (local time, so the day resets at your midnight) ----------
+  const pad = n => String(n).padStart(2, "0");
+  const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const fromKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+  const todayKey = () => keyOf(new Date());
+  const shiftKey = (k, n) => { const d = fromKey(k); d.setDate(d.getDate() + n); return keyOf(d); };
+  function label(k) {
+    const t = todayKey();
+    if (k === t) return "Today";
+    if (k === shiftKey(t, -1)) return "Yesterday";
+    return fromKey(k).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  const fmt = n => Math.round(n).toLocaleString();
+
+  let viewing = todayKey();
+  let lastToday = viewing;
+  let selectedType = defaultType();
+
+  function defaultType() {
+    const h = new Date().getHours();
+    if (h < 11) return "Breakfast";
+    if (h < 16) return "Lunch";
+    if (h < 21) return "Dinner";
+    return "Snack";
+  }
+
+  const mealsOf = k => (state.days[k] && state.days[k].meals) || [];
+  const goalOf = k => (state.days[k] && state.days[k].goal) || state.goal || 2000;
+  const eatenOf = k => mealsOf(k).reduce((s, m) => s + m.kcal, 0);
+
+  function ensureDay(k) {
+    if (!state.days[k]) state.days[k] = { goal: state.goal, meals: [] };
+    return state.days[k];
+  }
+
+  // ---------- rendering ----------
+  function render() {
+    const goal = goalOf(viewing), eaten = eatenOf(viewing), left = goal - eaten;
+    $("dayTitle").textContent = label(viewing);
+    $("nextDay").disabled = viewing >= todayKey();
+    $("leftLabel").textContent = left >= 0 ? "Calories left" : "Calories over";
+    $("leftNum").textContent = fmt(Math.abs(left));
+    $("leftNum").classList.toggle("over", left < 0);
+    $("goalVal").textContent = fmt(goal);
+    $("eatenVal").textContent = fmt(eaten);
+    const pct = Math.min(100, goal ? eaten / goal * 100 : 0);
+    $("barFill").style.width = pct + "%";
+    $("bar").className = "bar" + (left < 0 ? " over" : pct >= 90 ? " near" : "");
+    $("mealsTitle").textContent = viewing === todayKey() ? "Today's meals" : "Meals";
+
+    $("typeChips").innerHTML = "";
+    TYPES.forEach(t => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip" + (t === selectedType ? " on" : "");
+      b.textContent = t;
+      b.onclick = () => { selectedType = t; render(); };
+      $("typeChips").appendChild(b);
+    });
+
+    const list = $("mealList"); list.innerHTML = "";
+    const meals = mealsOf(viewing);
+    if (!meals.length) {
+      list.innerHTML = '<div class="empty">Nothing logged yet.</div>';
+    } else {
+      TYPES.forEach(t => {
+        const group = meals.filter(m => m.type === t);
+        if (!group.length) return;
+        const title = document.createElement("div");
+        title.className = "group-title";
+        title.innerHTML = `<span>${t}</span><span>${fmt(group.reduce((s, m) => s + m.kcal, 0))} kcal</span>`;
+        list.appendChild(title);
+        const ul = document.createElement("ul");
+        group.forEach(m => {
+          const li = document.createElement("li"); li.className = "meal";
+          const name = document.createElement("span"); name.className = "meal-name"; name.textContent = m.name || "(no name)";
+          const kcal = document.createElement("span"); kcal.className = "meal-kcal"; kcal.textContent = fmt(m.kcal);
+          const actions = document.createElement("span"); actions.className = "meal-actions";
+          const e = document.createElement("button"); e.textContent = "✏️"; e.setAttribute("aria-label", "Edit " + m.name); e.onclick = () => openEdit(m.id);
+          const d = document.createElement("button"); d.textContent = "🗑️"; d.setAttribute("aria-label", "Delete " + m.name); d.onclick = () => removeMeal(m.id);
+          actions.append(e, d);
+          li.append(name, kcal, actions); ul.appendChild(li);
+        });
+        list.appendChild(ul);
+      });
+    }
+
+    const h = $("history"); h.innerHTML = "";
+    for (let i = 0; i < 7; i++) {
+      const k = shiftKey(todayKey(), -i);
+      const g = goalOf(k), e = eatenOf(k);
+      const row = document.createElement("div"); row.className = "history-row";
+      row.innerHTML = `<span class="d"></span><span class="mini${e > g ? " over" : ""}"><div style="width:${Math.min(100, g ? e / g * 100 : 0)}%"></div></span><span class="n">${mealsOf(k).length ? fmt(e) : "–"}</span>`;
+      row.querySelector(".d").textContent = label(k);
+      if (k === viewing) row.style.fontWeight = "700";
+      row.onclick = () => { viewing = k; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+      h.appendChild(row);
+    }
+  }
+
+  // ---------- actions ----------
+  $("addForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const name = $("mealName").value.trim();
+    const kcal = Math.round(Number($("mealKcal").value));
+    if (!$("mealKcal").value || !(kcal >= 0)) { $("mealKcal").focus(); return; }
+    ensureDay(viewing).meals.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, kcal, type: selectedType });
+    save();
+    $("mealName").value = ""; $("mealKcal").value = "";
+    $("mealName").blur(); $("mealKcal").blur();
+    render();
+  });
+  $("mealName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("mealKcal").focus(); } });
+
+  let undo = null, toastTimer;
+  function removeMeal(id) {
+    const day = state.days[viewing]; const i = day.meals.findIndex(m => m.id === id);
+    if (i < 0) return;
+    const [m] = day.meals.splice(i, 1); const k = viewing;
+    save(); render();
+    undo = () => { state.days[k].meals.splice(i, 0, m); save(); render(); };
+    $("toastText").textContent = `Deleted ${m.name || "meal"}`;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 4000);
+  }
+  $("toastUndo").onclick = () => { if (undo) undo(); undo = null; $("toast").classList.remove("show"); };
+
+  let editingId = null;
+  TYPES.forEach(t => { const o = document.createElement("option"); o.value = o.textContent = t; $("editType").appendChild(o); });
+  function openEdit(id) {
+    const m = mealsOf(viewing).find(x => x.id === id); if (!m) return;
+    editingId = id;
+    $("editName").value = m.name; $("editKcal").value = m.kcal; $("editType").value = m.type;
+    $("editDialog").showModal();
+  }
+  $("editForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const m = mealsOf(viewing).find(x => x.id === editingId);
+    if (m) {
+      m.name = $("editName").value.trim();
+      m.kcal = Math.max(0, Math.round(Number($("editKcal").value)) || 0);
+      m.type = $("editType").value;
+      save(); render();
+    }
+    $("editDialog").close();
+  });
+  $("editCancel").onclick = () => $("editDialog").close();
+
+  function openGoal(first) {
+    $("goalInput").value = state.goal || 2000;
+    $("goalCancel").style.display = first ? "none" : "";
+    $("goalDialog").showModal();
+  }
+  $("openGoal").onclick = () => openGoal(false);
+  $("goalCancel").onclick = () => $("goalDialog").close();
+  $("goalForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const g = Math.round(Number($("goalInput").value));
+    if (!(g >= 500 && g <= 10000)) return;
+    state.goal = g;
+    // A new goal applies from today on; past days keep the goal they had.
+    ensureDay(todayKey()).goal = g;
+    save(); render(); $("goalDialog").close();
+  });
+
+  $("prevDay").onclick = () => { viewing = shiftKey(viewing, -1); render(); };
+  $("nextDay").onclick = () => { if (viewing < todayKey()) { viewing = shiftKey(viewing, 1); render(); } };
+
+  // Roll over to the new day at midnight, or when the app is reopened on a new day.
+  function checkDay() {
+    const t = todayKey();
+    if (t !== lastToday) { if (viewing === lastToday) viewing = t; lastToday = t; selectedType = defaultType(); render(); }
+  }
+  setInterval(checkDay, 30000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkDay(); });
+
+  render();
+  if (!state.goal) openGoal(true);
+
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+})();
+</script>
+</body>
+</html>
