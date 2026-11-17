@@ -71,13 +71,6 @@
   .meal-actions button { background: none; border: 0; padding: 6px 8px; cursor: pointer; color: var(--muted); font-size: 16px; border-radius: 8px; }
   .meal-actions button:active { background: var(--line); }
   .empty { color: var(--muted); text-align: center; padding: 14px 0; font-size: 15px; }
-  .history-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
-  .history-row:last-child { border-bottom: 0; }
-  .history-row .d { flex: 0 0 92px; font-size: 14px; }
-  .history-row .mini { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
-  .history-row .mini > div { height: 100%; background: var(--green); }
-  .history-row .mini.over > div { background: var(--red); }
-  .history-row .n { flex: 0 0 70px; text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; }
   dialog { border: 0; border-radius: 18px; padding: 20px; width: min(92vw, 400px); background: var(--card); color: var(--text); }
   dialog::backdrop { background: rgba(0,0,0,.45); }
   dialog h3 { margin: 0 0 12px; }
@@ -91,6 +84,57 @@
     transition: transform .25s, visibility .25s; font-size: 15px; z-index: 10; visibility: hidden; }
   .toast.show { transform: translateX(-50%) translateY(0); visibility: visible; }
   .toast button { background: none; border: 0; color: #86efac; font-weight: 700; cursor: pointer; }
+
+  .macros { display: flex; justify-content: space-around; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .macros b { display: block; color: var(--text); font-size: 15px; }
+  .link-btn { background: none; border: 0; color: var(--green); font-size: 14px; font-weight: 600; padding: 4px 0; cursor: pointer; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-head h2 { margin: 0; }
+  .fav-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+  .fav-row::-webkit-scrollbar { display: none; }
+  .fav { flex: 0 0 auto; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 8px 12px; cursor: pointer; text-align: left; max-width: 170px; }
+  .fav span { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fav small { color: var(--muted); font-size: 12px; }
+  .fav:active { background: var(--green-soft); }
+  .search-btn { flex: 0 0 auto; width: auto; padding: 12px 14px; }
+  .macro-inputs input { text-align: center; }
+  .meal-sub { font-size: 12px; color: var(--muted); }
+  .meal-main { flex: 1; min-width: 0; }
+  .meal-main .meal-name { display: block; }
+  .star-on { color: #f59e0b !important; }
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 160px; position: relative; margin: 6px 0 4px; }
+  .chart .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: pointer; position: relative; z-index: 1; }
+  .chart .b { width: 100%; max-width: 34px; background: var(--green); border-radius: 6px 6px 2px 2px; min-height: 2px; }
+  .chart .b.over { background: var(--red); }
+  .chart .b.none { background: var(--line); }
+  .chart .col.sel .b { outline: 2px solid var(--text); outline-offset: 2px; }
+  .chart .v { font-size: 11px; color: var(--muted); margin-bottom: 3px; font-variant-numeric: tabular-nums; }
+  .goal-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--muted); opacity: .5; z-index: 0; }
+  .goal-tag { position: absolute; right: 0; font-size: 11px; color: var(--muted); transform: translateY(-100%); background: var(--card); padding: 0 2px; }
+  .chart-labels { display: flex; gap: 6px; }
+  .chart-labels span { flex: 1; text-align: center; font-size: 12px; color: var(--muted); }
+  .chart-labels span.today { color: var(--text); font-weight: 700; }
+  .week-stats { display: flex; justify-content: space-around; margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+  .week-stats b { display: block; color: var(--text); font-size: 16px; }
+  .week-nav { display: flex; align-items: center; gap: 2px; }
+  .week-nav span { font-size: 13px; color: var(--muted); min-width: 92px; text-align: center; }
+  .week-nav .icon-btn { font-size: 18px; padding: 2px 8px; }
+  #searchDialog { padding: 16px; height: min(80vh, 640px); }
+  #searchDialog[open] { display: flex; flex-direction: column; }
+  .results { overflow-y: auto; flex: 1; margin-top: 8px; -webkit-overflow-scrolling: touch; }
+  .result { display: flex; justify-content: space-between; gap: 10px; padding: 11px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .result:active { background: var(--bg); }
+  .result .rn { min-width: 0; }
+  .result .rn span { display: block; }
+  .result .rn small { color: var(--muted); font-size: 12px; }
+  .result .rk { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .res-head { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin: 12px 4px 2px; }
+  .portion { display: flex; gap: 8px; align-items: center; }
+  .portion input { flex: 0 0 90px; }
+  .portion-total { font-size: 28px; font-weight: 800; text-align: center; margin: 12px 0 2px; }
+  .fav-manage li { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .fav-manage li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fav-manage li button { background: none; border: 0; font-size: 16px; cursor: pointer; padding: 4px 8px; }
 </style>
 </head>
 <body>
@@ -109,16 +153,29 @@
       <div><b id="goalVal">0</b>Goal</div>
       <div><b id="eatenVal">0</b>Eaten</div>
     </div>
+    <div class="macros" id="macros" hidden>
+      <div><b id="pVal">0 g</b>Protein</div>
+      <div><b id="cVal">0 g</b>Carbs</div>
+      <div><b id="fVal">0 g</b>Fat</div>
+    </div>
   </section>
 
   <section class="card">
-    <h2>Add a meal</h2>
+    <div class="card-head"><h2>Add a meal</h2><button class="link-btn" id="manageFavs" type="button" hidden>Edit favorites</button></div>
+    <div class="fav-row" id="favRow"></div>
     <form id="addForm" autocomplete="off">
       <div class="chips" id="typeChips"></div>
       <div class="row">
+        <button class="secondary search-btn" type="button" id="openSearch" aria-label="Search foods">🔍</button>
         <input id="mealName" placeholder="What did you eat?" enterkeyhint="next" maxlength="80">
         <input id="mealKcal" class="kcal-input" type="number" inputmode="numeric" placeholder="kcal" min="0" max="10000" enterkeyhint="done">
       </div>
+      <div class="row macro-inputs" id="macroInputs" hidden>
+        <input id="mealP" type="number" inputmode="decimal" placeholder="Protein g" min="0" max="1000" step="any">
+        <input id="mealC" type="number" inputmode="decimal" placeholder="Carbs g" min="0" max="1000" step="any">
+        <input id="mealF" type="number" inputmode="decimal" placeholder="Fat g" min="0" max="1000" step="any">
+      </div>
+      <button class="link-btn" type="button" id="toggleMacros">+ Protein, carbs, fat (optional)</button>
       <button class="primary" type="submit">Add</button>
     </form>
   </section>
@@ -129,8 +186,20 @@
   </section>
 
   <section class="card">
-    <h2>Last 7 days</h2>
-    <div id="history"></div>
+    <div class="card-head">
+      <h2>Week</h2>
+      <div class="week-nav">
+        <button class="icon-btn" id="prevWeek" aria-label="Previous week">‹</button>
+        <span id="weekLabel">This week</span>
+        <button class="icon-btn" id="nextWeek" aria-label="Next week">›</button>
+      </div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="chart-labels" id="chartLabels"></div>
+    <div class="week-stats">
+      <div><b id="avgVal">–</b>Daily average</div>
+      <div><b id="onTrackVal">–</b>Days within goal</div>
+    </div>
   </section>
 
   <section class="card">
@@ -158,6 +227,12 @@
     <input id="editName" maxlength="80">
     <label for="editKcal">Calories</label>
     <input id="editKcal" type="number" inputmode="numeric" min="0" max="10000" required>
+    <label>Protein, carbs, fat (g, optional)</label>
+    <div class="row macro-inputs" style="display:flex;gap:8px">
+      <input id="editP" type="number" inputmode="decimal" placeholder="Protein" min="0" step="any">
+      <input id="editC" type="number" inputmode="decimal" placeholder="Carbs" min="0" step="any">
+      <input id="editF" type="number" inputmode="decimal" placeholder="Fat" min="0" step="any">
+    </div>
     <label for="editType">Meal</label>
     <select id="editType"></select>
     <div class="dialog-btns">
@@ -167,8 +242,38 @@
   </form>
 </dialog>
 
+<dialog id="searchDialog">
+  <div class="row" style="display:flex;gap:8px">
+    <input id="searchInput" type="search" placeholder="Search a food, e.g. banana" enterkeyhint="search">
+    <button class="secondary" type="button" id="searchClose" style="width:auto">Close</button>
+  </div>
+  <div class="results" id="results"></div>
+</dialog>
+
+<dialog id="portionDialog">
+  <form id="portionForm">
+    <h3 id="portionName">Food</h3>
+    <label for="portionAmt" id="portionLabel">Amount</label>
+    <div class="portion"><input id="portionAmt" type="number" inputmode="decimal" min="0" step="any" required><span id="portionUnit"></span></div>
+    <div class="portion-total" id="portionTotal">0 kcal</div>
+    <p class="hint" id="portionMacros" style="text-align:center"></p>
+    <div class="dialog-btns">
+      <button class="secondary" type="button" id="portionCancel">Back</button>
+      <button class="primary" type="submit">Use this</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="favDialog">
+  <h3>Favorites</h3>
+  <p class="hint">Tap ☆ next to any meal you've logged to save it here.</p>
+  <ul class="fav-manage" id="favManage"></ul>
+  <div class="dialog-btns"><button class="secondary" type="button" id="favClose">Done</button></div>
+</dialog>
+
 <div class="toast" id="toast"><span id="toastText"></span><button id="toastUndo">Undo</button></div>
 
+<script src="foods.js"></script>
 <script>
 (() => {
   const TYPES = ["Breakfast", "Lunch", "Dinner", "Snack"];
@@ -212,6 +317,14 @@
   const mealsOf = k => (state.days[k] && state.days[k].meals) || [];
   const goalOf = k => (state.days[k] && state.days[k].goal) || state.goal || 2000;
   const eatenOf = k => mealsOf(k).reduce((s, m) => s + m.kcal, 0);
+  const sumOf = (k, f) => mealsOf(k).reduce((s, m) => s + (Number(m[f]) || 0), 0);
+  if (!state.favorites) state.favorites = [];
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const num = v => (v === "" || v == null || isNaN(Number(v))) ? undefined : Math.round(Number(v) * 10) / 10;
+  const g1 = n => (Math.round(n * 10) / 10).toLocaleString();
+  const favKey = m => (m.name || "").trim().toLowerCase() + "|" + m.kcal;
+  const findFav = m => state.favorites.find(f => favKey(f) === favKey(m));
+  let weekOffset = 0;
 
   function ensureDay(k) {
     if (!state.days[k]) state.days[k] = { goal: state.goal, meals: [] };
@@ -231,6 +344,9 @@
     const pct = Math.min(100, goal ? eaten / goal * 100 : 0);
     $("barFill").style.width = pct + "%";
     $("bar").className = "bar" + (left < 0 ? " over" : pct >= 90 ? " near" : "");
+    const hasMacros = mealsOf(viewing).some(m => m.p != null || m.c != null || m.f != null);
+    $("macros").hidden = !hasMacros;
+    if (hasMacros) { $("pVal").textContent = g1(sumOf(viewing, "p")) + " g"; $("cVal").textContent = g1(sumOf(viewing, "c")) + " g"; $("fVal").textContent = g1(sumOf(viewing, "f")) + " g"; }
     $("mealsTitle").textContent = viewing === todayKey() ? "Today's meals" : "Meals";
 
     $("typeChips").innerHTML = "";
@@ -257,29 +373,99 @@
         const ul = document.createElement("ul");
         group.forEach(m => {
           const li = document.createElement("li"); li.className = "meal";
+          const main = document.createElement("span"); main.className = "meal-main";
           const name = document.createElement("span"); name.className = "meal-name"; name.textContent = m.name || "(no name)";
+          main.appendChild(name);
+          if (m.p != null || m.c != null || m.f != null) {
+            const sub = document.createElement("span"); sub.className = "meal-sub";
+            sub.textContent = `P ${g1(m.p || 0)} · C ${g1(m.c || 0)} · F ${g1(m.f || 0)}`;
+            main.appendChild(sub);
+          }
           const kcal = document.createElement("span"); kcal.className = "meal-kcal"; kcal.textContent = fmt(m.kcal);
           const actions = document.createElement("span"); actions.className = "meal-actions";
           const e = document.createElement("button"); e.textContent = "✏️"; e.setAttribute("aria-label", "Edit " + m.name); e.onclick = () => openEdit(m.id);
           const d = document.createElement("button"); d.textContent = "🗑️"; d.setAttribute("aria-label", "Delete " + m.name); d.onclick = () => removeMeal(m.id);
-          actions.append(e, d);
-          li.append(name, kcal, actions); ul.appendChild(li);
+          const isFav = !!findFav(m);
+          const st = document.createElement("button"); st.textContent = isFav ? "★" : "☆"; st.style.fontSize = "19px";
+          if (isFav) st.className = "star-on";
+          st.setAttribute("aria-label", (isFav ? "Remove from favorites " : "Save as favorite ") + m.name);
+          st.onclick = () => toggleFav(m);
+          actions.append(st, e, d);
+          li.append(main, kcal, actions); ul.appendChild(li);
         });
         list.appendChild(ul);
       });
     }
 
-    const h = $("history"); h.innerHTML = "";
-    for (let i = 0; i < 7; i++) {
-      const k = shiftKey(todayKey(), -i);
-      const g = goalOf(k), e = eatenOf(k);
-      const row = document.createElement("div"); row.className = "history-row";
-      row.innerHTML = `<span class="d"></span><span class="mini${e > g ? " over" : ""}"><div style="width:${Math.min(100, g ? e / g * 100 : 0)}%"></div></span><span class="n">${mealsOf(k).length ? fmt(e) : "–"}</span>`;
-      row.querySelector(".d").textContent = label(k);
-      if (k === viewing) row.style.fontWeight = "700";
-      row.onclick = () => { viewing = k; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
-      h.appendChild(row);
-    }
+    renderFavs();
+    renderWeek();
+  }
+
+  function renderFavs() {
+    const row = $("favRow"); row.innerHTML = "";
+    const favs = state.favorites.slice().sort((a, b) => (b.uses || 0) - (a.uses || 0));
+    $("manageFavs").hidden = !favs.length;
+    row.hidden = !favs.length;
+    favs.forEach(f => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "fav";
+      b.setAttribute("aria-label", "Add favorite " + f.name);
+      const n = document.createElement("span"); n.textContent = "★ " + (f.name || "(no name)");
+      const k = document.createElement("small"); k.textContent = fmt(f.kcal) + " kcal";
+      b.append(n, k);
+      b.onclick = () => {
+        addMeal({ name: f.name, kcal: f.kcal, p: f.p, c: f.c, f: f.f });
+        f.uses = (f.uses || 0) + 1; save(); render();
+        showToast(`Added ${f.name || "meal"}`, null);
+      };
+      row.appendChild(b);
+    });
+  }
+
+  function renderWeek() {
+    const end = shiftKey(todayKey(), -7 * weekOffset);
+    const keys = []; for (let i = 6; i >= 0; i--) keys.push(shiftKey(end, -i));
+    const goal = state.goal || 2000;
+    const vals = keys.map(k => ({ k, e: eatenOf(k), g: goalOf(k), logged: mealsOf(k).length > 0 }));
+    const max = Math.max(goal * 1.2, ...vals.map(v => v.e)) || 1;
+    const chart = $("chart"); chart.innerHTML = "";
+    const line = document.createElement("div"); line.className = "goal-line"; line.style.bottom = (goal / max * 100) + "%";
+    const tag = document.createElement("span"); tag.className = "goal-tag"; tag.textContent = "goal " + fmt(goal);
+    line.appendChild(tag); chart.appendChild(line);
+    const labels = $("chartLabels"); labels.innerHTML = "";
+    vals.forEach(v => {
+      const col = document.createElement("div"); col.className = "col" + (v.k === viewing ? " sel" : "");
+      col.setAttribute("aria-label", label(v.k) + ": " + (v.logged ? fmt(v.e) + " kcal" : "nothing logged"));
+      const val = document.createElement("div"); val.className = "v"; val.textContent = v.logged ? fmt(v.e) : "";
+      const bar = document.createElement("div"); bar.className = "b" + (!v.logged ? " none" : v.e > v.g ? " over" : "");
+      bar.style.height = (v.logged ? Math.max(2, v.e / max * 85) : 2) + "%";
+      col.append(val, bar);
+      col.onclick = () => { viewing = v.k; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+      chart.appendChild(col);
+      const l = document.createElement("span");
+      l.textContent = fromKey(v.k).toLocaleDateString(undefined, { weekday: "short" }).slice(0, 3);
+      if (v.k === todayKey()) l.className = "today";
+      labels.appendChild(l);
+    });
+    const logged = vals.filter(v => v.logged);
+    $("avgVal").textContent = logged.length ? fmt(logged.reduce((s, v) => s + v.e, 0) / logged.length) : "–";
+    $("onTrackVal").textContent = logged.length ? `${logged.filter(v => v.e <= v.g).length} of ${logged.length}` : "–";
+    const short = k => fromKey(k).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    $("weekLabel").textContent = weekOffset === 0 ? "Last 7 days" : `${short(keys[0])} – ${short(end)}`;
+    $("nextWeek").disabled = weekOffset === 0;
+  }
+
+  function addMeal(m) {
+    const meal = { id: newId(), name: m.name || "", kcal: m.kcal, type: selectedType };
+    ["p", "c", "f"].forEach(f => { if (m[f] != null) meal[f] = m[f]; });
+    ensureDay(viewing).meals.push(meal);
+    save();
+  }
+
+  function toggleFav(m) {
+    const f = findFav(m);
+    if (f) { state.favorites = state.favorites.filter(x => x !== f); showToast(`Removed ${m.name || "meal"} from favorites`, null); }
+    else { state.favorites.push({ id: newId(), name: m.name, kcal: m.kcal, p: m.p, c: m.c, f: m.f, uses: 0 }); showToast(`Saved ${m.name || "meal"} to favorites`, null); }
+    save(); render();
   }
 
   // ---------- actions ----------
@@ -288,9 +474,8 @@
     const name = $("mealName").value.trim();
     const kcal = Math.round(Number($("mealKcal").value));
     if (!$("mealKcal").value || !(kcal >= 0)) { $("mealKcal").focus(); return; }
-    ensureDay(viewing).meals.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, kcal, type: selectedType });
-    save();
-    $("mealName").value = ""; $("mealKcal").value = "";
+    addMeal({ name, kcal, p: num($("mealP").value), c: num($("mealC").value), f: num($("mealF").value) });
+    ["mealName", "mealKcal", "mealP", "mealC", "mealF"].forEach(id => $(id).value = "");
     $("mealName").blur(); $("mealKcal").blur();
     render();
   });
@@ -302,10 +487,14 @@
     if (i < 0) return;
     const [m] = day.meals.splice(i, 1); const k = viewing;
     save(); render();
-    undo = () => { state.days[k].meals.splice(i, 0, m); save(); render(); };
-    $("toastText").textContent = `Deleted ${m.name || "meal"}`;
+    showToast(`Deleted ${m.name || "meal"}`, () => { state.days[k].meals.splice(i, 0, m); save(); render(); });
+  }
+  function showToast(text, undoFn) {
+    undo = undoFn;
+    $("toastText").textContent = text;
+    $("toastUndo").hidden = !undoFn;
     $("toast").classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 4000);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), undoFn ? 4000 : 2000);
   }
   $("toastUndo").onclick = () => { if (undo) undo(); undo = null; $("toast").classList.remove("show"); };
 
@@ -315,6 +504,7 @@
     const m = mealsOf(viewing).find(x => x.id === id); if (!m) return;
     editingId = id;
     $("editName").value = m.name; $("editKcal").value = m.kcal; $("editType").value = m.type;
+    $("editP").value = m.p ?? ""; $("editC").value = m.c ?? ""; $("editF").value = m.f ?? "";
     $("editDialog").showModal();
   }
   $("editForm").addEventListener("submit", ev => {
@@ -324,6 +514,7 @@
       m.name = $("editName").value.trim();
       m.kcal = Math.max(0, Math.round(Number($("editKcal").value)) || 0);
       m.type = $("editType").value;
+      ["p", "c", "f"].forEach(f => { const v = num($("edit" + f.toUpperCase()).value); if (v == null) delete m[f]; else m[f] = v; });
       save(); render();
     }
     $("editDialog").close();
@@ -346,6 +537,155 @@
     ensureDay(todayKey()).goal = g;
     save(); render(); $("goalDialog").close();
   });
+
+  // ---------- macros toggle ----------
+  $("toggleMacros").onclick = () => {
+    const show = $("macroInputs").hidden;
+    $("macroInputs").hidden = !show;
+    $("toggleMacros").textContent = show ? "− Hide protein, carbs, fat" : "+ Protein, carbs, fat (optional)";
+  };
+
+  // ---------- favorites management ----------
+  function renderFavManage() {
+    const ul = $("favManage"); ul.innerHTML = "";
+    if (!state.favorites.length) { ul.innerHTML = '<li class="empty">No favorites yet.</li>'; return; }
+    state.favorites.forEach(f => {
+      const li = document.createElement("li");
+      const n = document.createElement("span"); n.textContent = `${f.name || "(no name)"} · ${fmt(f.kcal)} kcal`;
+      const d = document.createElement("button"); d.textContent = "🗑️"; d.setAttribute("aria-label", "Remove favorite " + f.name);
+      d.onclick = () => { state.favorites = state.favorites.filter(x => x !== f); save(); render(); renderFavManage(); };
+      li.append(n, d); ul.appendChild(li);
+    });
+  }
+  $("manageFavs").onclick = () => { renderFavManage(); $("favDialog").showModal(); };
+  $("favClose").onclick = () => $("favDialog").close();
+
+  // ---------- food search ----------
+  const FOODS = (window.COMMON_FOODS || []).map(([name, portion, grams, kcal, p, c, f]) =>
+    ({ name, unit: portion, per: { kcal, p, c, f }, step: 1, def: 1, kind: "common", grams }));
+  const norm = t => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  function searchLocal(q) {
+    const words = norm(q).split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    return FOODS.map(f => {
+      const n = norm(f.name); let score = 0;
+      for (const w of words) { if (!n.includes(w)) return null; score += n.startsWith(w) ? 2 : (new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(n) ? 1 : 0.5); }
+      return { f, score };
+    }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 8).map(x => x.f);
+  }
+  let searchSeq = 0, searchTimer, onlineCtrl;
+  async function searchOnline(q, seq) {
+    if (onlineCtrl) onlineCtrl.abort();
+    onlineCtrl = new AbortController();
+    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=20&fields=product_name,brands,nutriments,serving_quantity,serving_size&search_terms=" + encodeURIComponent(q);
+    const r = await fetch(url, { signal: onlineCtrl.signal });
+    if (!r.ok) throw new Error("search failed");
+    const data = await r.json();
+    if (seq !== searchSeq) return null;
+    const out = [], seen = new Set();
+    for (const p of data.products || []) {
+      const n = p.nutriments || {};
+      let kcal = n["energy-kcal_100g"];
+      if (kcal == null && n["energy_100g"] != null) kcal = n["energy_100g"] / 4.184;
+      if (kcal == null || !p.product_name) continue;
+      const name = p.product_name.trim() + (p.brands ? " (" + p.brands.split(",")[0].trim() + ")" : "");
+      if (seen.has(name.toLowerCase())) continue; seen.add(name.toLowerCase());
+      const sq = Number(p.serving_quantity);
+      out.push({ name, unit: "g", per: { kcal: kcal / 100, p: num(n.proteins_100g) / 100, c: num(n.carbohydrates_100g) / 100, f: num(n.fat_100g) / 100 },
+        step: 1, def: sq > 0 && sq < 2000 ? Math.round(sq) : 100, kind: "online", serving: p.serving_size });
+      if (out.length >= 12) break;
+    }
+    return out;
+  }
+  function resultRow(item) {
+    const div = document.createElement("div"); div.className = "result";
+    const rn = document.createElement("div"); rn.className = "rn";
+    const n = document.createElement("span"); n.textContent = item.name;
+    const sm = document.createElement("small");
+    sm.textContent = item.kind === "common" ? `${item.unit} (${item.grams} g)` : (item.serving ? `serving ${item.serving} · ` : "") + `${fmt(item.per.kcal * 100)} kcal per 100 g`;
+    rn.append(n, sm);
+    const rk = document.createElement("div"); rk.className = "rk";
+    rk.textContent = fmt(item.per.kcal * item.def) + " kcal";
+    div.append(rn, rk);
+    div.onclick = () => openPortion(item);
+    return div;
+  }
+  function renderResults(local, online, status) {
+    const box = $("results"); box.innerHTML = "";
+    if (local.length) {
+      const h = document.createElement("div"); h.className = "res-head"; h.textContent = "Common foods"; box.appendChild(h);
+      local.forEach(i => box.appendChild(resultRow(i)));
+    }
+    const h2 = document.createElement("div"); h2.className = "res-head"; h2.textContent = "Packaged foods (Open Food Facts)"; box.appendChild(h2);
+    if (online && online.length) online.forEach(i => box.appendChild(resultRow(i)));
+    else { const e = document.createElement("div"); e.className = "empty"; e.textContent = status; box.appendChild(e); }
+  }
+  function runSearch() {
+    const q = $("searchInput").value.trim();
+    const seq = ++searchSeq;
+    clearTimeout(searchTimer);
+    if (q.length < 2) { $("results").innerHTML = '<div class="empty">Type at least 2 letters.</div>'; return; }
+    const local = searchLocal(q);
+    renderResults(local, null, navigator.onLine === false ? "You're offline, so only common foods are shown." : "Searching…");
+    if (navigator.onLine === false || q.length < 3) return;
+    searchTimer = setTimeout(async () => {
+      try {
+        const online = await searchOnline(q, seq);
+        if (online && seq === searchSeq) renderResults(local, online, "No packaged foods found.");
+      } catch (e) {
+        if (e.name !== "AbortError" && seq === searchSeq) renderResults(local, [], "Couldn't reach the food database. Try again in a moment.");
+      }
+    }, 800);
+  }
+  $("openSearch").onclick = () => {
+    $("searchInput").value = $("mealName").value;
+    $("searchDialog").showModal();
+    if ($("searchInput").value.trim().length >= 2) runSearch(); else $("results").innerHTML = '<div class="empty">Search common foods like "banana" or "rice", or packaged foods by name or brand.</div>';
+    $("searchInput").focus();
+  };
+  $("searchInput").addEventListener("input", runSearch);
+  $("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); runSearch(); $("searchInput").blur(); } });
+  $("searchClose").onclick = () => $("searchDialog").close();
+
+  let portionItem = null;
+  function portionCalc() {
+    const a = Number($("portionAmt").value) || 0, p = portionItem.per;
+    const r = { kcal: Math.round(p.kcal * a) };
+    ["p", "c", "f"].forEach(k => { if (p[k] != null && !isNaN(p[k])) r[k] = Math.round(p[k] * a * 10) / 10; });
+    return r;
+  }
+  function updatePortion() {
+    const r = portionCalc();
+    $("portionTotal").textContent = fmt(r.kcal) + " kcal";
+    $("portionMacros").textContent = (r.p != null || r.c != null || r.f != null) ? `Protein ${g1(r.p || 0)} g · Carbs ${g1(r.c || 0)} g · Fat ${g1(r.f || 0)} g` : "";
+  }
+  function openPortion(item) {
+    portionItem = item;
+    $("portionName").textContent = item.name;
+    $("portionLabel").textContent = item.kind === "common" ? "How many?" : "How many grams?";
+    $("portionUnit").textContent = item.kind === "common" ? "× " + item.unit : "g";
+    $("portionAmt").value = item.def;
+    $("portionAmt").step = item.kind === "common" ? "0.5" : "1";
+    updatePortion();
+    $("portionDialog").showModal();
+  }
+  $("portionAmt").addEventListener("input", updatePortion);
+  $("portionCancel").onclick = () => $("portionDialog").close();
+  $("portionForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const r = portionCalc(), it = portionItem;
+    const a = Number($("portionAmt").value) || 0;
+    const qty = it.kind === "common" ? (a === 1 ? "" : ` ×${a}`) : `, ${a} g`;
+    $("mealName").value = it.name + qty;
+    $("mealKcal").value = r.kcal;
+    $("mealP").value = r.p ?? ""; $("mealC").value = r.c ?? ""; $("mealF").value = r.f ?? "";
+    if (r.p != null || r.c != null || r.f != null) { $("macroInputs").hidden = false; $("toggleMacros").textContent = "− Hide protein, carbs, fat"; }
+    $("portionDialog").close(); $("searchDialog").close();
+    $("addForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  $("prevWeek").onclick = () => { weekOffset++; renderWeek(); };
+  $("nextWeek").onclick = () => { if (weekOffset > 0) { weekOffset--; renderWeek(); } };
 
   $("prevDay").onclick = () => { viewing = shiftKey(viewing, -1); render(); };
   $("nextDay").onclick = () => { if (viewing < todayKey()) { viewing = shiftKey(viewing, 1); render(); } };
