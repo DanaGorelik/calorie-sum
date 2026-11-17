@@ -24,6 +24,7 @@
       --line: #262c35; --green-soft: #12301d; --red-soft: #3a1515;
     }
   }
+  [hidden] { display: none !important; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -165,8 +166,8 @@
     <div class="fav-row" id="favRow"></div>
     <form id="addForm" autocomplete="off">
       <div class="chips" id="typeChips"></div>
+      <button class="secondary" type="button" id="openSearch" style="margin-bottom:8px">🔍 Look up calories</button>
       <div class="row">
-        <button class="secondary search-btn" type="button" id="openSearch" aria-label="Search foods">🔍</button>
         <input id="mealName" placeholder="What did you eat?" enterkeyhint="next" maxlength="80">
         <input id="mealKcal" class="kcal-input" type="number" inputmode="numeric" placeholder="kcal" min="0" max="10000" enterkeyhint="done">
       </div>
